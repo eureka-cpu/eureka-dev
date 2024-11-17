@@ -27,8 +27,7 @@
           cargoHash = "sha256-BnbllOsidqDEfKs0pd6AzFjzo51PKm9uFSwmOGTW3ug=";
         };
 
-        mermaid-init-js = pkgs.callPackage ./pkgs/mdbook-mermaid/mermaid-init.js.nix { };
-        mermaid-min-js = pkgs.callPackage ./pkgs/mdbook-mermaid/mermaid.min.js.nix { };
+        # TODO: inject src so this will build the actual book at root
         mdbook-build = pkgs.runCommand "mdbook-build" {
           buildInputs = [
             self.packages.${system}.mdbook
@@ -36,21 +35,22 @@
           ];
         } ''
           mkdir -p $out
-          mdbook init
-          mdbook-mermaid install .
-          mdbook build
+          mdbook init $out
+          mdbook-mermaid install $out
+          mdbook build $out
         '';
       in
       {
-        checks = {};
+        checks = {
+          inherit mdbook-build;
+        };
         packages = {
           inherit
             mdbook
             mdbook-mermaid
-            mermaid-init-js
-            mermaid-min-js
             mdbook-build
             ;
+          default = mdbook-build;
         };
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
