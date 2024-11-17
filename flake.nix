@@ -26,6 +26,20 @@
           hash = "sha256-elDKxtGMLka9Ss5CNnzw32ndxTUliNUgPXp7e4KUmBo=";
           cargoHash = "sha256-BnbllOsidqDEfKs0pd6AzFjzo51PKm9uFSwmOGTW3ug=";
         };
+
+        mermaid-init-js = pkgs.callPackage ./pkgs/mdbook-mermaid/mermaid-init.js.nix { };
+        mermaid-min-js = pkgs.callPackage ./pkgs/mdbook-mermaid/mermaid.min.js.nix { };
+        mdbook-build = pkgs.runCommand "mdbook-build" {
+          buildInputs = [
+            self.packages.${system}.mdbook
+            self.packages.${system}.mdbook-mermaid
+          ];
+        } ''
+          mkdir -p $out
+          mdbook init
+          mdbook-mermaid install .
+          mdbook build
+        '';
       in
       {
         checks = {};
@@ -33,6 +47,9 @@
           inherit
             mdbook
             mdbook-mermaid
+            mermaid-init-js
+            mermaid-min-js
+            mdbook-build
             ;
         };
         devShells.default = pkgs.mkShell {
